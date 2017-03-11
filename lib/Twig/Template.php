@@ -598,6 +598,17 @@ abstract class Twig_Template implements Twig_TemplateInterface
             $this->env->getExtension('sandbox')->checkMethodAllowed($object, $method);
         }
 
+        /* BEGIN HACK */
+
+        // Convert any Twig_Markup arguments back to strings (unless the class *extends* Twig_Markup)
+        foreach ($arguments as $key => $value) {
+            if ($value instanceof Twig_Markup && get_class($value) == 'Twig_Markup') {
+                $arguments[$key] = (string) $value;
+            }
+        }
+
+        /* END HACK */
+
         // Some objects throw exceptions when they have __call, and the method we try
         // to call is not supported. If ignoreStrictCheck is true, we should return null.
         try {

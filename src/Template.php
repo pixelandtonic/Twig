@@ -15,6 +15,7 @@ namespace Twig;
 use Twig\Error\Error;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
+use Twig_Markup;
 
 /**
  * Default base class for compiled templates.
@@ -663,6 +664,17 @@ abstract class Template implements \Twig_TemplateInterface
         if ($this->env->hasExtension('\Twig\Extension\SandboxExtension')) {
             $this->env->getExtension('\Twig\Extension\SandboxExtension')->checkMethodAllowed($object, $method);
         }
+
+        /* BEGIN HACK */
+
+        // Convert any Twig_Markup arguments back to strings (unless the class *extends* Twig_Markup)
+        foreach ($arguments as $key => $value) {
+            if ($value instanceof Twig_Markup && get_class($value) == 'Twig_Markup') {
+                $arguments[$key] = (string) $value;
+            }
+        }
+
+        /* END HACK */
 
         // Some objects throw exceptions when they have __call, and the method we try
         // to call is not supported. If ignoreStrictCheck is true, we should return null.
